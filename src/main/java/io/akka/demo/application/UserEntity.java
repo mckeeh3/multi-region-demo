@@ -22,7 +22,7 @@ public class UserEntity extends EventSourcedEntity<User.State, User.Event> {
   }
 
   public Effect<Done> createUser(User.Command.CreateUser command) {
-    log.debug("EntityId: {}\n_State: {}\n_Command: {}", entityId, currentState(), command);
+    log.info("EntityId: {}\n_State: {}\n_Command: {}", entityId, currentState(), command);
 
     if (!currentState().equals(emptyState())) {
       return effects().reply(done()); // Already exists

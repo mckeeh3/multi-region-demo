@@ -15,8 +15,10 @@ import java.util.stream.Stream;
 
 public class MultiplePostRequestsSimulation extends Simulation {
 
+  private static final String baseUrl = System.getProperty("baseUrl", "http://localhost:9000");
+
   private HttpProtocolBuilder httpProtocol = http
-      .baseUrl("http://localhost:9000")
+      .baseUrl(baseUrl)
       .acceptHeader("application/json")
       .contentTypeHeader("application/json");
 
@@ -39,10 +41,10 @@ public class MultiplePostRequestsSimulation extends Simulation {
       .feed(randomFeeder)
       .repeat(10).on(
           exec(http("Create User")
-              .post("/users")
+              .post("/user")
               .body(StringBody(
                   "{\"userId\": \"#{randomId}\", \"name\": \"#{randomName}\", \"email\": \"#{randomEmail}\"}"))
-              .check(status().is(201))).pause(1));
+              .check(status().is(200))).pause(1));
 
   {
     setUp(
