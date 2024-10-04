@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Non json config for Kalix user dev modes, note that for actual deploy
-     the default sample JSON logging output must be used or else production
-     does not work -->
+
 <configuration>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -9,10 +7,10 @@
         </encoder>
     </appender>
 
-    <logger name="akka" level="WARN"/>
+    <logger name="akka" level="INFO"/>
+    <logger name="akka.http" level="INFO"/>
 
-    <!-- Silence some details from Akka, should not be important to user/SDK dev mode -->
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="STDOUT"/>
     </root>
 

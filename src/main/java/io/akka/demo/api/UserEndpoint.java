@@ -26,7 +26,7 @@ public class UserEndpoint {
 
   @Post()
   public CompletionStage<Done> createUser(CreateUserRequest request) {
-    log.info("{}", request);
+    log.debug("{}", request);
     var command = new User.Command.CreateUser(request.userId(), request.name(), request.email());
 
     return client.forEventSourcedEntity(request.userId())

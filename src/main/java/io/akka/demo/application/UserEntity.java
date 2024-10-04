@@ -32,7 +32,6 @@ public class UserEntity extends EventSourcedEntity<User.State, User.Event> {
       return effects().error("Name and email are required");
     }
 
-    log.info("Creating user: {}", command);
     return effects()
         .persist(currentState().onCommand(command))
         .thenReply(__ -> done());

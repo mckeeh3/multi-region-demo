@@ -41,7 +41,7 @@ public class MultiplePostRequestsSimulation extends Simulation {
           exec(http("Create User")
               .post("/users")
               .body(StringBody(
-                  "{\"id\": \"#{randomId}\", \"name\": \"#{randomName}\", \"email\": \"#{randomEmail}\"}"))
+                  "{\"userId\": \"#{randomId}\", \"name\": \"#{randomName}\", \"email\": \"#{randomEmail}\"}"))
               .check(status().is(201))).pause(1));
 
   {
