@@ -18,10 +18,10 @@ import org.slf4j.LoggerFactory;
 @HttpEndpoint("/user")
 public class UserEndpoint {
   private final Logger log = LoggerFactory.getLogger(getClass());
-  private ComponentClient client;
+  private ComponentClient entityClient;
 
   public UserEndpoint(ComponentClient client) {
-    this.client = client;
+    this.entityClient = client;
   }
 
   @Post()
@@ -29,14 +29,14 @@ public class UserEndpoint {
     log.debug("{}", request);
     var command = new User.Command.CreateUser(request.userId(), request.name(), request.email());
 
-    return client.forEventSourcedEntity(request.userId())
+    return entityClient.forEventSourcedEntity(request.userId())
         .method(UserEntity::createUser)
         .invokeAsync(command);
   }
 
   @Get("/{userId}")
   public CompletionStage<User.State> getUserInfo(String userId) {
-    return client.forEventSourcedEntity(userId)
+    return entityClient.forEventSourcedEntity(userId)
         .method(UserEntity::get)
         .invokeAsync();
   }
