@@ -1,17 +1,23 @@
 package io.akka.demo.gatling;
 
-import io.gatling.javaapi.core.*;
-import io.gatling.javaapi.http.*;
+import static io.gatling.javaapi.core.CoreDsl.StringBody;
+import static io.gatling.javaapi.core.CoreDsl.exec;
+import static io.gatling.javaapi.core.CoreDsl.rampUsers;
+import static io.gatling.javaapi.core.CoreDsl.scenario;
+import static io.gatling.javaapi.http.HttpDsl.http;
+import static io.gatling.javaapi.http.HttpDsl.status;
 
-import static io.gatling.javaapi.core.CoreDsl.*;
-import static io.gatling.javaapi.http.HttpDsl.*;
-
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+
+import io.gatling.javaapi.core.ScenarioBuilder;
+import io.gatling.javaapi.core.Simulation;
+import io.gatling.javaapi.http.HttpProtocolBuilder;
 
 public class MultiplePostRequestsSimulation extends Simulation {
 
@@ -44,10 +50,11 @@ public class MultiplePostRequestsSimulation extends Simulation {
               .post("/user")
               .body(StringBody(
                   "{\"userId\": \"#{randomId}\", \"name\": \"#{randomName}\", \"email\": \"#{randomEmail}\"}"))
-              .check(status().is(200))).pause(1));
+              .check(status().is(200)))
+                  .pause(Duration.ofSeconds(1)));
 
   {
     setUp(
-        scn.injectOpen(rampUsers(50).during(30))).protocols(httpProtocol);
+        scn.injectOpen(rampUsers(50).during(Duration.ofSeconds(30)))).protocols(httpProtocol);
   }
 }

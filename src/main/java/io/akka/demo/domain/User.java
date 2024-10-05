@@ -1,10 +1,9 @@
 package io.akka.demo.domain;
 
-import akka.javasdk.annotations.TypeName;
-
 public interface User {
   public record State(String userId, String name, String email) {
     public Event onCommand(Command.CreateUser command) {
+      // do some business logic
       return new Event.UserCreated(command.userId(), command.name(), command.email());
     }
 
@@ -13,12 +12,11 @@ public interface User {
     }
   }
 
-  sealed interface Command {
+  public sealed interface Command {
     record CreateUser(String userId, String name, String email) implements Command {}
   }
 
-  sealed interface Event {
-    @TypeName("UserCreated")
+  public sealed interface Event {
     record UserCreated(String userId, String name, String email) implements Event {}
   }
 }
