@@ -39,7 +39,9 @@ class UserEntityTest {
       assertEquals(userId, event.userId());
       assertEquals(name, event.name());
       assertEquals(email, event.email());
+    }
 
+    {
       var state = testKit.getState();
       assertEquals(userId, state.userId());
       assertEquals(name, state.name());
