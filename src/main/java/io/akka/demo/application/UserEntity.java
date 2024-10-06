@@ -34,7 +34,7 @@ public class UserEntity extends EventSourcedEntity<User.State, User.Event> {
     } else {
       return effects()
           .persist(event.get())
-          .thenReply(__ -> Done.getInstance());
+          .thenReply(newState -> Done.getInstance());
     }
   }
 
@@ -52,7 +52,7 @@ public class UserEntity extends EventSourcedEntity<User.State, User.Event> {
     } else {
       return effects()
           .persist(event.get())
-          .thenReply(__ -> Done.getInstance());
+          .thenReply(newState -> Done.getInstance());
     }
   }
 
