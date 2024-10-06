@@ -30,7 +30,7 @@ public class UserEntity extends EventSourcedEntity<User.State, User.Event> {
 
     var event = currentState().onCommand(command);
     if (event.isEmpty()) {
-      return effects().reply(Done.getInstance()); // Already exists
+      return effects().reply(Done.getInstance()); // User already exists
     } else {
       return effects()
           .persist(event.get())
@@ -57,7 +57,7 @@ public class UserEntity extends EventSourcedEntity<User.State, User.Event> {
   }
 
   public ReadOnlyEffect<User.State> get() {
-    if (currentState().equals(emptyState())) {
+    if (currentState().isEmpty()) {
       return effects().error("User '%s' does not exist".formatted(entityId));
     }
     return effects().reply(currentState());
@@ -65,7 +65,7 @@ public class UserEntity extends EventSourcedEntity<User.State, User.Event> {
 
   @Override
   public User.State emptyState() {
-    return new User.State(null, null, null);
+    return User.State.empty();
   }
 
   @Override
