@@ -5,10 +5,10 @@ import java.util.Optional;
 public interface User {
   public record State(String userId, String name, String email) {
     public Optional<Event> onCommand(Command.CreateUser command) {
-      if (this.isEmpty()) {
+      if (this.isEmpty()) { // User not created yet
         return Optional.of(new Event.UserCreated(command.userId(), command.name(), command.email()));
       } else {
-        return Optional.empty(); // Already exists
+        return Optional.empty(); // User already exists
       }
     }
 
