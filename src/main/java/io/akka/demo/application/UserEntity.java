@@ -9,7 +9,6 @@ import akka.javasdk.annotations.ComponentId;
 import akka.javasdk.eventsourcedentity.EventSourcedEntity;
 import akka.javasdk.eventsourcedentity.EventSourcedEntityContext;
 import io.akka.demo.domain.User;
-import static akka.Done.done;
 
 @ComponentId("user")
 @Acl(allow = @Acl.Matcher(service = "*"))
@@ -24,17 +23,37 @@ public class UserEntity extends EventSourcedEntity<User.State, User.Event> {
   public Effect<Done> createUser(User.Command.CreateUser command) {
     log.info("EntityId: {}\n_State: {}\n_Command: {}", entityId, currentState(), command);
 
-    if (!currentState().equals(emptyState())) {
-      return effects().reply(done()); // Already exists
-    }
-
-    if (command.name() == null || command.email() == null) {
+    // Validate the command
+    if (isBlank(command.name()) || isBlank(command.email())) {
       return effects().error("Name and email are required");
     }
 
-    return effects()
-        .persist(currentState().onCommand(command))
-        .thenReply(__ -> done());
+    var event = currentState().onCommand(command);
+    if (event.isEmpty()) {
+      return effects().reply(Done.getInstance()); // Already exists
+    } else {
+      return effects()
+          .persist(event.get())
+          .thenReply(__ -> Done.getInstance());
+    }
+  }
+
+  public Effect<Done> changeEmail(User.Command.ChangeEmail command) {
+    log.info("EntityId: {}\n_State: {}\n_Command: {}", entityId, currentState(), command);
+
+    // Validate the command
+    if (isBlank(command.email())) {
+      return effects().error("Email is required");
+    }
+
+    var event = currentState().onCommand(command);
+    if (event.isEmpty()) {
+      return effects().reply(Done.getInstance()); // Email already changed
+    } else {
+      return effects()
+          .persist(event.get())
+          .thenReply(__ -> Done.getInstance());
+    }
   }
 
   public ReadOnlyEffect<User.State> get() {
@@ -53,6 +72,12 @@ public class UserEntity extends EventSourcedEntity<User.State, User.Event> {
   public User.State applyEvent(User.Event event) {
     return switch (event) {
       case User.Event.UserCreated userCreated -> currentState().onEvent(userCreated);
+      case User.Event.EmailChanged emailChanged -> currentState().onEvent(emailChanged);
+      default -> currentState();
     };
+  }
+
+  private boolean isBlank(String value) {
+    return value == null || value.isBlank();
   }
 }
