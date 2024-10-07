@@ -42,6 +42,9 @@ public class UserEntity extends EventSourcedEntity<User.State, User.Event> {
     log.info("EntityId: {}\n_State: {}\n_Command: {}", entityId, currentState(), command);
 
     // Validate the command
+    if (currentState().isEmpty()) {
+      return effects().error("User '%s' does not exist".formatted(entityId));
+    }
     if (isBlank(command.email())) {
       return effects().error("Email is required");
     }

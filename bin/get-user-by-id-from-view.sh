@@ -5,10 +5,10 @@ hostname="localhost:9000"
 
 # Check if at least one parameter is provided
 if [ $# -eq 2 ]; then
-    url="https://$1/user/$2"
+    url="https://$1/user-view/by-id/$2"
     userId="$2"
 elif [ $# -eq 1 ]; then
-    url="http://localhost:9000/user/$1"
+    url="http://localhost:9000/user-view/by-id/$1"
     userId="$1"
 else
     echo "Usage: $0 [hostname] <userId>"
