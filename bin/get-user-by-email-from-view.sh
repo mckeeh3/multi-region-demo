@@ -2,13 +2,13 @@
 
 # Check if hostname parameter is provided
 if [ $# -eq 2 ]; then
-    userId="$2"
-    url="https://$1/user/$userId"
+    email="$2"
+    url="https://$1/user-view/by-id/$email"
 elif [ $# -eq 1 ]; then
-    userId="$1"
-    url="http://localhost:9000/user/$userId"
+    email="$1"
+    url="http://localhost:9000/user-view/by-email/$email"
 else
-    echo "Usage: $0 [hostname] <userId>"
+    echo "Usage: $0 [hostname] <email>"
     exit 1
 fi
 

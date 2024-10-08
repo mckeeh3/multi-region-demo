@@ -13,21 +13,21 @@ import io.akka.demo.domain.User;
 @ComponentId("user-view")
 public class UserView extends View {
   @Query("""
-      SELECT * FROM user WHERE id = :id
+      SELECT * FROM user_view WHERE id = :id
       """)
   public QueryEffect<UserRow> getUserById(String id) {
     return queryResult();
   }
 
   @Query("""
-      SELECT * FROM user WHERE email = :email
+      SELECT * FROM user_view WHERE email = :email
       """)
   public QueryEffect<UserRow> getUserByEmail(String email) {
     return queryResult();
   }
 
   @Query("""
-      SELECT * FROM user
+      SELECT * FROM user_view
       """)
   public QueryStreamEffect<UserRow> getAllUsers() {
     return queryStreamResult();

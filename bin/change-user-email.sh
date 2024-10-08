@@ -1,14 +1,12 @@
 #!/bin/bash
 
-# Default hostname
-hostname="localhost:9000"
-
 # Check if hostname parameter is provided
 if [ $# -eq 3 ]; then
-    hostname="$1"
+    url="https://$1/user/change-email"
     userId="$2"
     email="$3"
 elif [ $# -eq 2 ]; then
+    url="http://localhost:9000/user/change-email"
     userId="$1"
     email="$2"
 else
@@ -17,12 +15,11 @@ else
 fi
 
 # Execute the curl command
-curl -X PUT "http://$hostname/user/change-email" \
--v \
+curl -X PUT "${url}" \
 -H 'Content-Type: application/json' \
 -d '{
-  "userId": "'"$userId"'",
-  "email": "'"$email"'"
+    "userId": "'"$userId"'",
+    "email": "'"$email"'"
 }'
 
 # Add a newline for better readability of output
