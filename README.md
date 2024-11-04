@@ -23,6 +23,32 @@ docker run -it --rm --name test-project -v $(pwd):/usr/src/mymaven -w /usr/src/m
 mvn gatling:test
 ```
 
+### Optional Gatling parameters
+
+You can run the Gatling test using Maven. The test supports two optional system properties to customize the test environment:
+
+1. `baseUrl`: The base URL of the application under test (default: "http://localhost:9000")
+2. `endpoint`: The specific endpoint to test (default: "/user")
+
+The `baseUrl` parameter is used for local testing. When testing this service on the Akka platform, the `baseUrl` parameter must be set to the service HTTP protocol and hostname.
+
+```bash
+mvn gatling:test -DbaseUrl=<service-protocol-hostname>
+```
+
+The `endpoint` parameter must be set to either `/user` or `/simple`. When the parameter is set to `/user`, the test will
+generate random user entities. When the parameter is set to `/simple`, no user entities are created.
+
+```bash
+mvn gatling:test -Dendpoint=</user|/simple>
+```
+
+### Notes
+
+- If you don't specify the `baseUrl` or `endpoint` properties, the test will use the default values.
+- Make sure your application is running and accessible at the specified base URL before starting the test.
+- The test results will be generated in the `target/gatling` directory after the test run completes.
+
 ## Change Gatling Hostname
 
 The Gatling simulation defaults to running the app locally.

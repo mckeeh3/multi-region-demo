@@ -1,36 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>io.akka</groupId>
     <artifactId>akka-javasdk-parent</artifactId>
-    <version>3.0.0-M6</version>
+    <version>3.0.0-M10</version>
   </parent>
 
   <groupId>io.akka</groupId>
   <artifactId>multi-region-demo</artifactId>
-  <version>0.0-1</version>
+  <version>0.0-5</version>
   <packaging>jar</packaging>
 
   <name>multi-region-demo</name>
 
   <properties>
-    <!-- For Docker setup see https://docs.kalix.io/projects/container-registries.html -->
-    <container.registry>kcr.us-east-1.kalix.io</container.registry>
-    <organization>acme</organization>
     <jdk.version>21</jdk.version>
     <gatling.version>3.12.0</gatling.version>
     <gatling-maven-plugin.version>4.3.0</gatling-maven-plugin.version>
   </properties>
-
-  <repositories>
-    <repository>
-      <id>akka-repository</id>
-      <name>Akka Repository</name>
-      <url>https://repo.akka.io/maven</url>
-    </repository>
-  </repositories>
 
   <dependencies>
     <dependency>

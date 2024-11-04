@@ -19,9 +19,11 @@ import io.gatling.javaapi.core.ScenarioBuilder;
 import io.gatling.javaapi.core.Simulation;
 import io.gatling.javaapi.http.HttpProtocolBuilder;
 
+// See README.md for how to run this simulation
 public class MultiplePostRequestsSimulation extends Simulation {
 
   private static final String baseUrl = System.getProperty("baseUrl", "http://localhost:9000");
+  private static final String endpoint = System.getProperty("endpoint", "/user");
 
   private HttpProtocolBuilder httpProtocol = http
       .baseUrl(baseUrl)
@@ -47,7 +49,7 @@ public class MultiplePostRequestsSimulation extends Simulation {
       .feed(randomFeeder)
       .repeat(10).on(
           exec(http("Create User")
-              .post("/user")
+              .post(endpoint)
               .body(StringBody(
                   "{\"userId\": \"#{randomId}\", \"name\": \"#{randomName}\", \"email\": \"#{randomEmail}\"}"))
               .check(status().is(200)))
