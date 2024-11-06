@@ -12,10 +12,4 @@ else
     exit 1
 fi
 
-# Execute the curl command
-curl -s \
-    -H "Accept: application/json" \
-    "${url}"
-
-# Add a newline for better readability of output
-echo
+curl "${url}"

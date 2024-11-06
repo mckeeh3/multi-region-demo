@@ -16,14 +16,10 @@ else
     exit 1
 fi
 
-# Execute the curl command
-curl -X POST "${url}" \
+curl -sX POST "${url}" \
 -H 'Content-Type: application/json' \
 -d '{
-  "userId": "'"$userId"'",
-  "name": "'"$name"'",
-  "email": "'"$email"'"
-}'
-
-# Add a newline for better readability of output
-echo
+        "userId": "'"$userId"'",
+        "name": "'"$name"'",
+        "email": "'"$email"'"
+    }'

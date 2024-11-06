@@ -17,51 +17,62 @@ docker run -it --rm --name test-project -v $(pwd):/usr/src/mymaven -w /usr/src/m
 
 `Ctrl+C` to stop.
 
-## Run Gatling
+## Run Gatling Tests
+
+There are two Gatling tests. One test hits a simple endpoint that returns HTTP responses without invoking other Akka components.
+A second test sends randomly generated create user requests. This second test invokes an event-sourced entity via an endpoint component.
+Bash scripts are provided for running both tests.
+
+### Run the HTTP only simple Gatling test
 
 ```bash
-mvn gatling:test
+./bin/gatling-test-simple-users.sh [hosthane]
 ```
 
-### Optional Gatling parameters
+The `hostname` is an optional parameter. Default hostname for local testing on host `localhost`, port `9000`.
 
-You can run the Gatling test using Maven. The test supports two optional system properties to customize the test environment:
-
-1. `baseUrl`: The base URL of the application under test (default: "http://localhost:9000")
-2. `endpoint`: The specific endpoint to test (default: "/user")
-
-The `baseUrl` parameter is used for local testing. When testing this service on the Akka platform, the `baseUrl` parameter must be set to the service HTTP protocol and hostname.
+### Run the create users Gatling test
 
 ```bash
-mvn gatling:test -DbaseUrl=<service-protocol-hostname>
+./bin/gatling-test-create-users.sh [hostname]
 ```
 
-The `endpoint` parameter must be set to either `/user` or `/simple`. When the parameter is set to `/user`, the test will
-generate random user entities. When the parameter is set to `/simple`, no user entities are created.
-
-```bash
-mvn gatling:test -Dendpoint=</user|/simple>
-```
+The `hostname` is an optional parameter. Default hostname for local testing on host `localhost`, port `9000`.
 
 ### Notes
 
-- If you don't specify the `baseUrl` or `endpoint` properties, the test will use the default values.
-- Make sure your application is running and accessible at the specified base URL before starting the test.
+- Make sure your application is running and accessible either locally or on the Akka platform before starting the test.
 - The test results will be generated in the `target/gatling` directory after the test run completes.
 
-## Change Gatling Hostname
+### Lookup Gatling Hostname
 
 The Gatling simulation defaults to running the app locally.
 
-Use the following to change Gatling to the app running on the platform:
+Use the following command to get the current service host"
 
 ```bash
-mvn gatling:test -DbaseUrl=http://the-platform-url
+akka routes get multi-region-demo
 ```
 
-TODO provide CLI to obtain the platform URL
+Example response:
 
-## View Gatling Report After Test Run
+```bash
+Route:          multi-region-demo
+Host:           damp-mode-6178.aws-us-east-2.apps.akka.st
+Allow CORS origins:     *
+Allow CORS methods:     GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS
+
+Paths:
+         /   multi-region-demo
+
+Status:
+        HostValidation: True
+                Last Transition:        Thu Oct 31 08:29:27 2024
+        Ready: True
+                Last Transition:        Mon Nov  4 08:49:55 2024
+```
+
+### View Gatling Report After Test Run
 
 At the conclusion of a Gatling test the following message is given that provides the location of the test run report.
 
@@ -71,7 +82,7 @@ Reports generated, please open the following file: file:///.../index.html
 
 Copy the URL to view in a browser or view in an IDE.
 
-## Create and view data using scripts
+## Create and view data using CLI scripts
 
 Two scripts are included in this project for creating and viewing user entities.
 

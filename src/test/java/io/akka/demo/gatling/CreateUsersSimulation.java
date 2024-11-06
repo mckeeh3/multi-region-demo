@@ -1,8 +1,11 @@
 package io.akka.demo.gatling;
 
 import static io.gatling.javaapi.core.CoreDsl.StringBody;
-import static io.gatling.javaapi.core.CoreDsl.exec;
+import static io.gatling.javaapi.core.CoreDsl.feed;
+import static io.gatling.javaapi.core.CoreDsl.holdFor;
 import static io.gatling.javaapi.core.CoreDsl.rampUsers;
+import static io.gatling.javaapi.core.CoreDsl.reachRps;
+import static io.gatling.javaapi.core.CoreDsl.responseTimeInMillis;
 import static io.gatling.javaapi.core.CoreDsl.scenario;
 import static io.gatling.javaapi.http.HttpDsl.http;
 import static io.gatling.javaapi.http.HttpDsl.status;
@@ -20,10 +23,11 @@ import io.gatling.javaapi.core.Simulation;
 import io.gatling.javaapi.http.HttpProtocolBuilder;
 
 // See README.md for how to run this simulation
-public class MultiplePostRequestsSimulation extends Simulation {
+public class CreateUsersSimulation extends Simulation {
 
+  private static final Random random = new Random();
   private static final String baseUrl = System.getProperty("baseUrl", "http://localhost:9000");
-  private static final String endpoint = System.getProperty("endpoint", "/user");
+  private static final String path = "/user";
 
   private HttpProtocolBuilder httpProtocol = http
       .baseUrl(baseUrl)
@@ -31,13 +35,12 @@ public class MultiplePostRequestsSimulation extends Simulation {
       .contentTypeHeader("application/json");
 
   private Iterator<Map<String, Object>> randomFeeder = Stream.generate((Supplier<Map<String, Object>>) () -> {
-    Random rand = new Random();
-    String randomId = String.valueOf(rand.nextInt(1000));
-    String randomName = "User" + rand.ints(97, 123)
-        .limit(5)
+    String randomId = String.valueOf(random.nextLong(1_000_000_000));
+    String randomName = "User" + random.ints(97, 123)
+        .limit(8)
         .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
         .toString();
-    String randomEmail = "user" + rand.nextInt(1000) + "@example.com";
+    String randomEmail = "user" + random.nextInt(1_000_000) + "@example.com";
 
     return Collections.unmodifiableMap(Map.of(
         "randomId", randomId,
@@ -46,17 +49,24 @@ public class MultiplePostRequestsSimulation extends Simulation {
   }).iterator();
 
   private ScenarioBuilder scn = scenario("Multiple POST Requests")
-      .feed(randomFeeder)
-      .repeat(10).on(
-          exec(http("Create User")
-              .post(endpoint)
-              .body(StringBody(
-                  "{\"userId\": \"#{randomId}\", \"name\": \"#{randomName}\", \"email\": \"#{randomEmail}\"}"))
-              .check(status().is(200)))
-                  .pause(Duration.ofSeconds(1)));
+      .repeat(10_000).on(
+          feed(randomFeeder)
+              .exec(http("Create User")
+                  .post(path)
+                  .body(StringBody(
+                      "{\"userId\": \"#{randomId}\", \"name\": \"#{randomName}\", \"email\": \"#{randomEmail}\"}"))
+                  .check(status().is(200))
+                  .check(responseTimeInMillis().lte(2_000)))
+              .pause(Duration.ofMillis(500)));
 
   {
     setUp(
-        scn.injectOpen(rampUsers(50).during(Duration.ofSeconds(30)))).protocols(httpProtocol);
+        scn.injectOpen(
+            rampUsers(1_000).during(Duration.ofMinutes(1))))
+                .throttle(
+                    reachRps(5_000).in(Duration.ofMinutes(1)),
+                    holdFor(Duration.ofMinutes(5)),
+                    reachRps(0).in(Duration.ofMinutes(1))) // sum the 3 durations for the total test run time
+                .protocols(httpProtocol);
   }
 }

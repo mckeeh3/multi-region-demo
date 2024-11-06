@@ -14,13 +14,9 @@ else
     exit 1
 fi
 
-# Execute the curl command
 curl -X PUT "${url}" \
 -H 'Content-Type: application/json' \
 -d '{
-    "userId": "'"$userId"'",
-    "email": "'"$email"'"
-}'
-
-# Add a newline for better readability of output
-echo
+        "userId": "'"$userId"'",
+        "email": "'"$email"'"
+    }'
