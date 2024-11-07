@@ -104,14 +104,14 @@ public class CreateUsersSimulation extends Simulation {
                     .pause(Duration.ofMillis(500))));
 
     {
-      var reachRpsValue = config.getInt("reachRps");
+      var reachRps = config.getInt("reachRps");
       var holdFor = config.getDuration("holdFor");
 
       setUp(
           scn.injectOpen(
               rampUsers(1_000).during(Duration.ofMinutes(1))))
                   .throttle(
-                      reachRps(reachRpsValue).in(Duration.ofMinutes(1)),
+                      reachRps(reachRps).in(Duration.ofMinutes(1)),
                       holdFor(holdFor),
                       reachRps(0).in(Duration.ofMinutes(1))) // sum the 3 durations for the total test run time
                   .protocols(httpProtocol);
