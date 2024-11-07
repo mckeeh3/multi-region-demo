@@ -27,7 +27,6 @@ import io.gatling.javaapi.core.ScenarioBuilder;
 import io.gatling.javaapi.core.Simulation;
 import io.gatling.javaapi.http.HttpProtocolBuilder;
 
-// See README.md for how to run this simulation
 public class CreateUsersSimulation extends Simulation {
 
   private static final Random random = new Random();
@@ -54,58 +53,70 @@ public class CreateUsersSimulation extends Simulation {
         "randomEmail", randomEmail));
   }).iterator();
 
-  private ScenarioBuilder scn = scenario("Multiple POST Requests")
-      .repeat(10_000).on(
-          feed(randomFeeder).exec(
-              randomSwitch()
-                  .on(
-                      percent(10).then(exec(
-                          exec(session -> {
-                            createdUserIds.add(session.getString("randomId"));
-                            return session;
-                          }).exec(
-                              http("Create User")
-                                  .post(path)
-                                  .body(StringBody(
-                                      "{\"userId\": \"#{randomId}\", \"name\": \"#{randomName}\", \"email\": \"#{randomEmail}\"}"))
-                                  .check(status().is(200))
-                                  .check(responseTimeInMillis().lte(2_000))))),
-                      percent(30).then(exec(
-                          exec(session -> {
-                            if (createdUserIds.isEmpty()) {
-                              return session;
-                            }
-                            var existingId = createdUserIds.get(random.nextInt(createdUserIds.size()));
-                            return session.set("existingId", existingId);
-                          }).exec(
-                              http("Update User Email")
-                                  .put(path + "/change-email")
-                                  .body(StringBody(
-                                      "{\"userId\": \"#{existingId}\", \"email\": \"#{randomEmail}\"}"))
-                                  .check(status().is(200))
-                                  .check(responseTimeInMillis().lte(2_000))))),
-                      percent(60).then(exec( // percents should add up to 100
-                          exec(session -> {
-                            if (createdUserIds.isEmpty()) {
-                              return session;
-                            }
-                            var existingId = createdUserIds.get(random.nextInt(createdUserIds.size()));
-                            return session.set("existingId", existingId);
-                          }).exec(
-                              http("Read User")
-                                  .get(path + "/#{existingId}")
-                                  .check(status().is(200))
-                                  .check(responseTimeInMillis().lte(1_000))))))
-                  .pause(Duration.ofMillis(500))));
-
   {
-    setUp(
-        scn.injectOpen(
-            rampUsers(1_000).during(Duration.ofMinutes(1))))
-                .throttle(
-                    reachRps(5_000).in(Duration.ofMinutes(1)),
-                    holdFor(Duration.ofMinutes(5)),
-                    reachRps(0).in(Duration.ofMinutes(1))) // sum the 3 durations for the total test run time
-                .protocols(httpProtocol);
+    var config = GatlingConfig.load("create-users-simulation.conf");
+
+    var percentCreate = config.getInt("percentCreate");
+    var percentUpdate = config.getInt("percentUpdate");
+    var percentRead = config.getInt("percentRead");
+
+    // private ScenarioBuilder scn = scenario("Multiple POST Requests")
+    var scn = scenario("Multiple POST Requests")
+        .repeat(10_000).on(
+            feed(randomFeeder).exec(
+                randomSwitch()
+                    .on(
+                        percent(percentCreate).then(exec(
+                            exec(session -> {
+                              createdUserIds.add(session.getString("randomId"));
+                              return session;
+                            }).exec(
+                                http("Create User")
+                                    .post(path)
+                                    .body(StringBody(
+                                        "{\"userId\": \"#{randomId}\", \"name\": \"#{randomName}\", \"email\": \"#{randomEmail}\"}"))
+                                    .check(status().is(200))
+                                    .check(responseTimeInMillis().lte(5_000))))),
+                        percent(percentUpdate).then(exec(
+                            exec(session -> {
+                              if (createdUserIds.isEmpty()) {
+                                return session.set("existingId", "000000");
+                              }
+                              var existingId = createdUserIds.get(random.nextInt(createdUserIds.size()));
+                              return session.set("existingId", existingId);
+                            }).exec(
+                                http("Update User Email")
+                                    .put(path + "/change-email")
+                                    .body(StringBody(
+                                        "{\"userId\": \"#{existingId}\", \"email\": \"#{randomEmail}\"}"))
+                                    .check(status().is(200))
+                                    .check(responseTimeInMillis().lte(5_000))))),
+                        percent(percentRead).then(exec( // percents should add up to 100
+                            exec(session -> {
+                              if (createdUserIds.isEmpty()) {
+                                return session.set("existingId", "000000");
+                              }
+                              var existingId = createdUserIds.get(random.nextInt(createdUserIds.size()));
+                              return session.set("existingId", existingId);
+                            }).exec(
+                                http("Read User")
+                                    .get(path + "/#{existingId}")
+                                    .check(status().is(200))
+                                    .check(responseTimeInMillis().lte(2_000))))))
+                    .pause(Duration.ofMillis(500))));
+
+    {
+      var reachRpsValue = config.getInt("reachRps");
+      var holdFor = config.getDuration("holdFor");
+
+      setUp(
+          scn.injectOpen(
+              rampUsers(1_000).during(Duration.ofMinutes(1))))
+                  .throttle(
+                      reachRps(reachRpsValue).in(Duration.ofMinutes(1)),
+                      holdFor(holdFor),
+                      reachRps(0).in(Duration.ofMinutes(1))) // sum the 3 durations for the total test run time
+                  .protocols(httpProtocol);
+    }
   }
 }
