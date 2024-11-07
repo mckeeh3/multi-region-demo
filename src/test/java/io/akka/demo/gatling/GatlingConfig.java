@@ -11,8 +11,8 @@ import java.util.regex.Pattern;
 public class GatlingConfig {
   private final Properties properties = new Properties();
 
-  static GatlingConfig load(String configFilePath) {
-    return new GatlingConfig(configFilePath);
+  static GatlingConfig load(String configResourceFile) {
+    return new GatlingConfig(configResourceFile);
   }
 
   static GatlingConfig load(File file) {
@@ -23,8 +23,8 @@ public class GatlingConfig {
     this("gatling.conf");
   }
 
-  private GatlingConfig(String configFilePath) {
-    try (InputStream fis = getClass().getClassLoader().getResourceAsStream(configFilePath)) {
+  private GatlingConfig(String configResourceFile) {
+    try (InputStream fis = getClass().getClassLoader().getResourceAsStream(configResourceFile)) {
       properties.load(fis);
     } catch (Exception e) {
       e.printStackTrace();

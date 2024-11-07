@@ -1,6 +1,7 @@
 package io.akka.demo.gatling;
 
 import static io.gatling.javaapi.core.CoreDsl.StringBody;
+import static io.gatling.javaapi.core.CoreDsl.exec;
 import static io.gatling.javaapi.core.CoreDsl.feed;
 import static io.gatling.javaapi.core.CoreDsl.holdFor;
 import static io.gatling.javaapi.core.CoreDsl.percent;
@@ -9,7 +10,6 @@ import static io.gatling.javaapi.core.CoreDsl.randomSwitch;
 import static io.gatling.javaapi.core.CoreDsl.reachRps;
 import static io.gatling.javaapi.core.CoreDsl.responseTimeInMillis;
 import static io.gatling.javaapi.core.CoreDsl.scenario;
-import static io.gatling.javaapi.core.CoreDsl.exec;
 import static io.gatling.javaapi.http.HttpDsl.http;
 import static io.gatling.javaapi.http.HttpDsl.status;
 
@@ -23,7 +23,6 @@ import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import io.gatling.javaapi.core.ScenarioBuilder;
 import io.gatling.javaapi.core.Simulation;
 import io.gatling.javaapi.http.HttpProtocolBuilder;
 
@@ -40,12 +39,12 @@ public class CreateUsersSimulation extends Simulation {
       .contentTypeHeader("application/json");
 
   private Iterator<Map<String, Object>> randomFeeder = Stream.generate((Supplier<Map<String, Object>>) () -> {
-    String randomId = String.valueOf(random.nextLong(1_000_000_000));
-    String randomName = "User" + random.ints(97, 123)
+    var randomId = String.valueOf(random.nextLong(1_000_000_000));
+    var randomName = "User" + random.ints(97, 123)
         .limit(8)
         .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
         .toString();
-    String randomEmail = "user" + random.nextInt(1_000_000) + "@example.com";
+    var randomEmail = "user" + random.nextInt(1_000_000) + "@example.com";
 
     return Collections.unmodifiableMap(Map.of(
         "randomId", randomId,
