@@ -59,7 +59,6 @@ public class CreateUsersSimulation extends Simulation {
     var percentUpdate = config.getInt("percentUpdate");
     var percentRead = config.getInt("percentRead");
 
-    // private ScenarioBuilder scn = scenario("Multiple POST Requests")
     var scn = scenario("Multiple POST Requests")
         .repeat(10_000).on(
             feed(randomFeeder).exec(
