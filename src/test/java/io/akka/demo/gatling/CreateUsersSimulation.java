@@ -3,16 +3,21 @@ package io.akka.demo.gatling;
 import static io.gatling.javaapi.core.CoreDsl.StringBody;
 import static io.gatling.javaapi.core.CoreDsl.feed;
 import static io.gatling.javaapi.core.CoreDsl.holdFor;
+import static io.gatling.javaapi.core.CoreDsl.percent;
 import static io.gatling.javaapi.core.CoreDsl.rampUsers;
+import static io.gatling.javaapi.core.CoreDsl.randomSwitch;
 import static io.gatling.javaapi.core.CoreDsl.reachRps;
 import static io.gatling.javaapi.core.CoreDsl.responseTimeInMillis;
 import static io.gatling.javaapi.core.CoreDsl.scenario;
+import static io.gatling.javaapi.core.CoreDsl.exec;
 import static io.gatling.javaapi.http.HttpDsl.http;
 import static io.gatling.javaapi.http.HttpDsl.status;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Supplier;
@@ -28,6 +33,7 @@ public class CreateUsersSimulation extends Simulation {
   private static final Random random = new Random();
   private static final String baseUrl = System.getProperty("baseUrl", "http://localhost:9000");
   private static final String path = "/user";
+  private static final List<String> createdUserIds = Collections.synchronizedList(new ArrayList<>());
 
   private HttpProtocolBuilder httpProtocol = http
       .baseUrl(baseUrl)
@@ -50,14 +56,47 @@ public class CreateUsersSimulation extends Simulation {
 
   private ScenarioBuilder scn = scenario("Multiple POST Requests")
       .repeat(10_000).on(
-          feed(randomFeeder)
-              .exec(http("Create User")
-                  .post(path)
-                  .body(StringBody(
-                      "{\"userId\": \"#{randomId}\", \"name\": \"#{randomName}\", \"email\": \"#{randomEmail}\"}"))
-                  .check(status().is(200))
-                  .check(responseTimeInMillis().lte(2_000)))
-              .pause(Duration.ofMillis(500)));
+          feed(randomFeeder).exec(
+              randomSwitch()
+                  .on(
+                      percent(10).then(exec(
+                          exec(session -> {
+                            createdUserIds.add(session.getString("randomId"));
+                            return session;
+                          }).exec(
+                              http("Create User")
+                                  .post(path)
+                                  .body(StringBody(
+                                      "{\"userId\": \"#{randomId}\", \"name\": \"#{randomName}\", \"email\": \"#{randomEmail}\"}"))
+                                  .check(status().is(200))
+                                  .check(responseTimeInMillis().lte(2_000))))),
+                      percent(30).then(exec(
+                          exec(session -> {
+                            if (createdUserIds.isEmpty()) {
+                              return session;
+                            }
+                            var existingId = createdUserIds.get(random.nextInt(createdUserIds.size()));
+                            return session.set("existingId", existingId);
+                          }).exec(
+                              http("Update User Email")
+                                  .put(path + "/change-email")
+                                  .body(StringBody(
+                                      "{\"userId\": \"#{existingId}\", \"email\": \"#{randomEmail}\"}"))
+                                  .check(status().is(200))
+                                  .check(responseTimeInMillis().lte(2_000))))),
+                      percent(60).then(exec( // percents should add up to 100
+                          exec(session -> {
+                            if (createdUserIds.isEmpty()) {
+                              return session;
+                            }
+                            var existingId = createdUserIds.get(random.nextInt(createdUserIds.size()));
+                            return session.set("existingId", existingId);
+                          }).exec(
+                              http("Read User")
+                                  .get(path + "/#{existingId}")
+                                  .check(status().is(200))
+                                  .check(responseTimeInMillis().lte(1_000))))))
+                  .pause(Duration.ofMillis(500))));
 
   {
     setUp(
