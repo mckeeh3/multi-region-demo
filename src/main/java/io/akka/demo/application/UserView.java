@@ -1,5 +1,7 @@
 package io.akka.demo.application;
 
+import java.time.Instant;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,14 +35,15 @@ public class UserView extends View {
   @Query(value = """
       SELECT *
         FROM user_view
+       LIMIT 1000
       """, streamUpdates = true)
   public QueryStreamEffect<UserRow> getAllUsers() {
     return queryStreamResult();
   }
 
-  public record UserRow(String id, String name, String email) {
-    public UserRow withEmail(String newEmail) {
-      return new UserRow(id, name, newEmail);
+  public record UserRow(String id, String name, String email, String hostname, Instant timeOfLastUpdate) {
+    public UserRow withEmail(User.Event.EmailChanged event) {
+      return new UserRow(id, name, event.email(), hostname, event.timeUpdated());
     }
   }
 
@@ -53,8 +56,9 @@ public class UserView extends View {
 
       return switch (event) {
         case User.Event.UserCreated userCreated -> effects()
-            .updateRow(new UserRow(userCreated.userId(), userCreated.name(), userCreated.email()));
-        case User.Event.EmailChanged emailChanged -> effects().updateRow(rowState().withEmail(emailChanged.email()));
+            .updateRow(new UserRow(userCreated.userId(), userCreated.name(), userCreated.email(),
+                userCreated.hostname(), userCreated.timeCreated()));
+        case User.Event.EmailChanged emailChanged -> effects().updateRow(rowState().withEmail(emailChanged));
       };
     }
   }

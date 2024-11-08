@@ -7,6 +7,8 @@ import akka.javasdk.annotations.http.HttpEndpoint;
 import akka.javasdk.annotations.http.Post;
 import io.akka.demo.domain.User;
 
+import java.net.InetAddress;
+import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -27,7 +29,14 @@ public class SimpleEndpoint {
 
   @Get("/{userId}")
   public CompletionStage<User.State> getUserInfo(String userId) {
-    return CompletableFuture.completedFuture(new User.State("user123", "User One", "user123@example.com"));
+    var hostname = "undefined hostname";
+    try {
+      hostname = InetAddress.getLocalHost().getHostName();
+    } catch (java.net.UnknownHostException e) {
+      log.error("Failed to get hostname", e);
+    }
+    return CompletableFuture
+        .completedFuture(new User.State("user123", "User One", "user123@example.com", hostname, Instant.now()));
   }
 
   public record CreateUserRequest(String userId, String name, String email) {}

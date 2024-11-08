@@ -58,6 +58,7 @@ public class CreateUsersSimulation extends Simulation {
     var percentCreate = config.getInt("percentCreate");
     var percentUpdate = config.getInt("percentUpdate");
     var percentRead = config.getInt("percentRead");
+    var pauseDuration = config.getDuration("pauseDuration");
 
     var scn = scenario("Multiple POST Requests")
         .repeat(10_000).on(
@@ -101,7 +102,7 @@ public class CreateUsersSimulation extends Simulation {
                                     .get(path + "/#{existingId}")
                                     .check(status().is(200))
                                     .check(responseTimeInMillis().lte(2_000))))))
-                    .pause(Duration.ofMillis(500))));
+                    .pause(pauseDuration)));
 
     {
       var reachRps = config.getInt("reachRps");
