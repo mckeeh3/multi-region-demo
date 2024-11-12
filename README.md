@@ -124,19 +124,24 @@ Two scripts are included in this project for creating and viewing user entities.
 
 Use the `create-user.sh` script to create a user.
 
-Create user with locally running service.
+Create user with locally running service. This script takes the provided `userId` and uses it for the user name and user email as \<userId>@gmail.com
 
 ```bash
-./bin/create-user.sh user456 user456 user456.example.com
+./bin/create-user.sh user456
 ```
 
 Create user with Akka platform service.
 
 ```bash
-./bin/create-user.sh $host user3 user3 user3@gmail.com
+./bin/create-user.sh $host user456
 ```
 
-The script takes three parameters: userId, name, and email.
+Use the `create-user-long.sh` script to set the userId, user name, and email.
+
+```bash
+./bin/create-user-long.sh user654 "Jane Doe" jand.doe@gmail.com
+./bin/create-user-long.sh $host user654 "Jane Doe" jand.doe@gmail.com
+```
 
 Use the `get-user,sh` script to view existing user entities.
 
